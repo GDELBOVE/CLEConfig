@@ -32,15 +32,16 @@ Ouvrir CLEConfig.html dans un navigateur web (Chrome recommandé).
   Cliquer "Choisir CLE.html" et sélectionner le fichier CLE.html à configurer.
 
 Étape 2 : Modifier les paramètres
-  - Nom du clocher : nom affiché en titre dans CLE
+  - Nom du clocher : sélectionner dans le déroulant des 17 clochers
   - Périodicité : Mois / Trimestre / Semestre / Année
-  - Catégories : libellé et type (Recette ou Dépense) de chaque onglet
-    -> Ajouter ou supprimer des catégories selon les besoins
 
 Étape 3 : Générer
   Cliquer "Générer CLE.html" — le fichier configuré est téléchargé
   dans le dossier Téléchargements.
   Remplacer l'ancien CLE.html par le nouveau fichier généré.
+
+Note : les catégories (onglets de CLE) sont fixes et ne peuvent pas
+être modifiées via CLEConfig.
 
 
 COMPATIBILITÉ

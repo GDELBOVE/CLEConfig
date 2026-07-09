@@ -34,14 +34,6 @@ main { max-width: 700px; margin: 24px auto; padding: 0 14px; }
 .btn-gris { background: var(--gris-bord); color: var(--texte); }
 .btn:hover { opacity: 0.88; }
 
-/* Catégories */
-.cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.cat-row { display: flex; gap: 8px; align-items: center; }
-.cat-row input { flex: 1; border: 1px solid var(--gris-bord); border-radius: var(--radius); padding: 7px 10px; font-size: 0.9rem; outline: none; }
-.cat-row input:focus { border-color: var(--bleu); }
-.cat-row select { border: 1px solid var(--gris-bord); border-radius: var(--radius); padding: 7px 10px; font-size: 0.9rem; outline: none; }
-.cat-row .btn-suppr { background: none; border: none; color: #bbb; font-size: 1.1rem; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
-.cat-row .btn-suppr:hover { color: var(--rouge); background: #fde8e6; }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
 
 /* Chargement */
@@ -78,8 +70,27 @@ input[type=file] { display: none; }
     <div class="card">
       <h2>Paramètres</h2>
       <div class="form-group">
-        <label for="inp-clocher">Nom du clocher</label>
-        <input type="text" id="inp-clocher" placeholder="ex: Beaumont">
+        <label for="sel-clocher">Nom du clocher</label>
+        <select id="sel-clocher">
+          <option value="">— Choisir —</option>
+          <option>Barbençon</option>
+          <option>Beaumont</option>
+          <option>Boussu</option>
+          <option>Erpion</option>
+          <option>Fourbechies</option>
+          <option>Froidchapelle</option>
+          <option>Grandrieu</option>
+          <option>Leugnies</option>
+          <option>Montbliart</option>
+          <option>Rance</option>
+          <option>Renlies</option>
+          <option>Sautin</option>
+          <option>Sivry</option>
+          <option>Solre-Saint-Géry</option>
+          <option>Strée</option>
+          <option>Thirimont</option>
+          <option>Vergnies</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="sel-periodicite">Périodicité</label>
@@ -92,17 +103,11 @@ input[type=file] { display: none; }
       </div>
     </div>
 
-    <div class="card">
-      <h2>Catégories</h2>
-      <div class="cat-list" id="cat-list"></div>
-      <button class="btn btn-gris" onclick="ajouterCategorie()">+ Ajouter une catégorie</button>
-    </div>
 
     <div class="card">
       <h2>Générer</h2>
       <div class="actions">
         <button class="btn btn-vert" onclick="generer()">⬇ Générer CLE.html</button>
-        <button class="btn btn-gris" onclick="recommencer()">↩ Charger un autre fichier</button>
       </div>
     </div>
   </div>
@@ -129,8 +134,7 @@ function chargerFichier(input) {
     contenuOriginal = e.target.result;
     try {
       const params = extraireParams(contenuOriginal);
-      const cats   = extraireCategories(contenuOriginal);
-      remplirFormulaire(params, cats);
+      remplirFormulaire(params);
       document.getElementById('zone-chargement').style.display = 'none';
       document.getElementById('zone-formulaire').style.display = 'block';
     } catch(err) {
@@ -149,47 +153,9 @@ function extraireParams(contenu) {
   return params;
 }
 
-function extraireCategories(contenu) {
-  const m = contenu.match(/window\.CATEGORIES\s*=\s*\[([\s\S]*?)\];/);
-  if (!m) throw new Error('Bloc CATEGORIES introuvable.');
-  const cats = [];
-  const re = /\{\s*id\s*:\s*"([^"]*)"\s*,\s*libelle\s*:\s*"([^"]*)"\s*,\s*type\s*:\s*"([^"]*)"\s*\}/g;
-  let match;
-  while ((match = re.exec(m[1])) !== null) {
-    cats.push({ id: match[1], libelle: match[2], type: match[3] });
-  }
-  if (cats.length === 0) throw new Error('Aucune catégorie trouvée.');
-  return cats;
-}
-
-function remplirFormulaire(params, cats) {
-  document.getElementById('inp-clocher').value = params.clocher || '';
+function remplirFormulaire(params) {
+  document.getElementById('sel-clocher').value = params.clocher || '';
   document.getElementById('sel-periodicite').value = params.periodicite || 'Mois';
-  const liste = document.getElementById('cat-list');
-  liste.innerHTML = '';
-  cats.forEach(cat => ajouterLigneCat(cat.libelle, cat.type));
-}
-
-function ajouterLigneCat(libelle, type) {
-  const liste = document.getElementById('cat-list');
-  const row = document.createElement('div');
-  row.className = 'cat-row';
-  row.innerHTML =
-    '<input type="text" placeholder="Libellé" value="' + esc(libelle || '') + '">' +
-    '<select>' +
-      '<option value="Recette"' + (type === 'Recette' ? ' selected' : '') + '>Recette</option>' +
-      '<option value="Dépense"' + (type === 'Dépense' ? ' selected' : '') + '>Dépense</option>' +
-    '</select>' +
-    '<button class="btn-suppr" title="Supprimer" onclick="this.parentElement.remove()">✕</button>';
-  liste.appendChild(row);
-}
-
-function ajouterCategorie() {
-  ajouterLigneCat('', 'Recette');
-}
-
-function slugifier(s) {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase();
 }
 
 function esc(s) {
@@ -197,21 +163,13 @@ function esc(s) {
 }
 
 function generer() {
-  const clocher = document.getElementById('inp-clocher').value.trim();
+  try { genererInterne(); } catch(e) { afficherAlerte('Erreur : ' + e.message, 'erreur'); }
+}
+
+function genererInterne() {
+  const clocher = document.getElementById('sel-clocher').value;
   const periodicite = document.getElementById('sel-periodicite').value;
   if (!clocher) { afficherAlerte('Le nom du clocher est obligatoire.', 'erreur'); return; }
-
-  const rows = document.querySelectorAll('#cat-list .cat-row');
-  const cats = [];
-  let ok = true;
-  rows.forEach(row => {
-    const lib = row.querySelector('input').value.trim();
-    const type = row.querySelector('select').value;
-    if (!lib) { ok = false; return; }
-    cats.push({ id: slugifier(lib), libelle: lib, type });
-  });
-  if (!ok) { afficherAlerte('Tous les libellés de catégorie doivent être remplis.', 'erreur'); return; }
-  if (cats.length === 0) { afficherAlerte('Au moins une catégorie est requise.', 'erreur'); return; }
 
   const blocParams =
     'window.PARAMS = {\n' +
@@ -219,16 +177,8 @@ function generer() {
     '  periodicite: "' + periodicite + '"\n' +
     '};';
 
-  const blocCats =
-    'window.CATEGORIES = [\n' +
-    cats.map(c =>
-      '  { id: "' + c.id + '",          libelle: "' + c.libelle + '", type: "' + c.type + '" }'
-    ).join(',\n') +
-    '\n];';
-
   let nouveau = contenuOriginal
-    .replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams)
-    .replace(/window\.CATEGORIES\s*=\s*\[[\s\S]*?\];/, blocCats);
+    .replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams);
 
   const blob = new Blob([nouveau], { type: 'text/html;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
@@ -240,14 +190,6 @@ function generer() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   afficherAlerte('CLE.html généré avec succès.', 'info');
-}
-
-function recommencer() {
-  contenuOriginal = '';
-  document.getElementById('inp-fichier').value = '';
-  document.getElementById('cat-list').innerHTML = '';
-  document.getElementById('zone-formulaire').style.display = 'none';
-  document.getElementById('zone-chargement').style.display = 'block';
 }
 </script>
 </body>
