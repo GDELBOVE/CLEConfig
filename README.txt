@@ -8,11 +8,12 @@ CLEConfig s'inscrit dans la chaîne de gestion financière des clochers :
   CLEConfig  →  CLE  →  Impression  →  Secrétariat / Trésorière  →  CLUP
 
 1. CLEConfig configure CLE pour un clocher donné (nom, périodicité, catégories)
-2. Le responsable local utilise CLE pour encoder les recettes et dépenses
-3. Il imprime le tableau et le transmet au secrétariat inter-paroissial
+2. La trésorière remet au responsable local les différents fichiers CLE générés
+3. Le responsable local utilise CLE pour encoder les recettes et dépenses
+4. Il imprime le tableau et le transmet au secrétariat inter-paroissial
    et à la trésorière
-4. Le montant versé est déposé sur le compte bancaire
-5. La trésorière encode dans CLUP le total des recettes, le total des
+5. Le responsable local verse le montant indiqué sur le compte bancaire inter-paroissial
+6. La trésorière encode dans CLUP le total des recettes, le total des
    dépenses et le fonds de caisse éventuel
 
 
