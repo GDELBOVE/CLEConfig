@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLEConfig — Configurateur</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bleu: #1a56a0;
+  --bleu-clair: #e8f0fb;
+  --vert: #1e7e34;
+  --rouge: #c0392b;
+  --gris-bord: #d0d4dc;
+  --texte: #222;
+  --texte-doux: #555;
+  --radius: 6px;
+  --ombre: 0 2px 8px rgba(0,0,0,0.10);
+}
+body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px; color: var(--texte); background: #e9ecf3; min-height: 100vh; }
+header { background: var(--bleu); color: #fff; padding: 10px 20px; box-shadow: var(--ombre); }
+header h1 { font-size: 1.1rem; font-weight: 700; }
+main { max-width: 700px; margin: 24px auto; padding: 0 14px; }
+.card { background: #fff; border-radius: var(--radius); box-shadow: var(--ombre); padding: 24px; margin-bottom: 16px; }
+.card h2 { font-size: 0.95rem; font-weight: 700; color: var(--bleu); margin-bottom: 16px; padding-bottom: 7px; border-bottom: 2px solid var(--bleu-clair); }
+.form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.form-group label { font-size: 0.78rem; font-weight: 700; color: var(--texte-doux); text-transform: uppercase; letter-spacing: .04em; }
+.form-group input, .form-group select { border: 1px solid var(--gris-bord); border-radius: var(--radius); padding: 8px 10px; font-size: 0.93rem; outline: none; }
+.form-group input:focus, .form-group select:focus { border-color: var(--bleu); }
+.btn { padding: 9px 22px; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+.btn-bleu { background: var(--bleu); color: #fff; }
+.btn-vert { background: var(--vert); color: #fff; }
+.btn-rouge { background: var(--rouge); color: #fff; }
+.btn-gris { background: var(--gris-bord); color: var(--texte); }
+.btn:hover { opacity: 0.88; }
+
+/* Catégories */
+.cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.cat-row { display: flex; gap: 8px; align-items: center; }
+.cat-row input { flex: 1; border: 1px solid var(--gris-bord); border-radius: var(--radius); padding: 7px 10px; font-size: 0.9rem; outline: none; }
+.cat-row input:focus { border-color: var(--bleu); }
+.cat-row select { border: 1px solid var(--gris-bord); border-radius: var(--radius); padding: 7px 10px; font-size: 0.9rem; outline: none; }
+.cat-row .btn-suppr { background: none; border: none; color: #bbb; font-size: 1.1rem; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+.cat-row .btn-suppr:hover { color: var(--rouge); background: #fde8e6; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+
+/* Chargement */
+#zone-chargement { text-align: center; padding: 32px; }
+#zone-chargement p { color: var(--texte-doux); margin-bottom: 16px; }
+input[type=file] { display: none; }
+#label-fichier { display: inline-block; padding: 10px 24px; background: var(--bleu); color: #fff; border-radius: var(--radius); cursor: pointer; font-weight: 700; font-size: 0.95rem; }
+#label-fichier:hover { opacity: 0.88; }
+
+#zone-formulaire { display: none; }
+
+#alerte { display: none; padding: 10px 16px; border-radius: var(--radius); font-weight: 600; font-size: 0.88rem; margin-bottom: 14px; }
+#alerte.info   { background: #e8f5e9; border: 1px solid #a5d6a7; color: #1b5e20; }
+#alerte.erreur { background: #fde8e6; border: 1px solid #f5c6c2; color: var(--rouge); }
+</style>
+</head>
+<body>
+<header>
+  <h1>CLEConfig — Configurateur CLE</h1>
+</header>
+<main>
+  <div id="alerte"></div>
+
+  <!-- Étape 1 : charger CLE.html -->
+  <div class="card" id="zone-chargement">
+    <h2>Charger CLE.html</h2>
+    <p>Sélectionnez votre fichier CLE.html pour modifier sa configuration.</p>
+    <label id="label-fichier" for="inp-fichier">📂 Choisir CLE.html</label>
+    <input type="file" id="inp-fichier" accept=".html" onchange="chargerFichier(this)">
+  </div>
+
+  <!-- Étape 2 : formulaire -->
+  <div id="zone-formulaire">
+    <div class="card">
+      <h2>Paramètres</h2>
+      <div class="form-group">
+        <label for="inp-clocher">Nom du clocher</label>
+        <input type="text" id="inp-clocher" placeholder="ex: Beaumont">
+      </div>
+      <div class="form-group">
+        <label for="sel-periodicite">Périodicité</label>
+        <select id="sel-periodicite">
+          <option value="Mois">Mois</option>
+          <option value="Trimestre">Trimestre</option>
+          <option value="Semestre">Semestre</option>
+          <option value="Année">Année</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Catégories</h2>
+      <div class="cat-list" id="cat-list"></div>
+      <button class="btn btn-gris" onclick="ajouterCategorie()">+ Ajouter une catégorie</button>
+    </div>
+
+    <div class="card">
+      <h2>Générer</h2>
+      <div class="actions">
+        <button class="btn btn-vert" onclick="generer()">⬇ Générer CLE.html</button>
+        <button class="btn btn-gris" onclick="recommencer()">↩ Charger un autre fichier</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+'use strict';
+
+let contenuOriginal = '';
+
+function afficherAlerte(msg, type) {
+  const el = document.getElementById('alerte');
+  el.textContent = msg;
+  el.className = type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+function chargerFichier(input) {
+  const fichier = input.files[0];
+  if (!fichier) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    contenuOriginal = e.target.result;
+    try {
+      const params = extraireParams(contenuOriginal);
+      const cats   = extraireCategories(contenuOriginal);
+      remplirFormulaire(params, cats);
+      document.getElementById('zone-chargement').style.display = 'none';
+      document.getElementById('zone-formulaire').style.display = 'block';
+    } catch(err) {
+      afficherAlerte('Impossible de lire les paramètres : ' + err.message, 'erreur');
+    }
+  };
+  reader.readAsText(fichier, 'utf-8');
+}
+
+function extraireParams(contenu) {
+  const m = contenu.match(/window\.PARAMS\s*=\s*\{([^}]+)\}/);
+  if (!m) throw new Error('Bloc PARAMS introuvable.');
+  const bloc = m[1];
+  const params = {};
+  bloc.replace(/(\w+)\s*:\s*"([^"]*)"/g, (_, k, v) => { params[k] = v; });
+  return params;
+}
+
+function extraireCategories(contenu) {
+  const m = contenu.match(/window\.CATEGORIES\s*=\s*\[([\s\S]*?)\];/);
+  if (!m) throw new Error('Bloc CATEGORIES introuvable.');
+  const cats = [];
+  const re = /\{\s*id\s*:\s*"([^"]*)"\s*,\s*libelle\s*:\s*"([^"]*)"\s*,\s*type\s*:\s*"([^"]*)"\s*\}/g;
+  let match;
+  while ((match = re.exec(m[1])) !== null) {
+    cats.push({ id: match[1], libelle: match[2], type: match[3] });
+  }
+  if (cats.length === 0) throw new Error('Aucune catégorie trouvée.');
+  return cats;
+}
+
+function remplirFormulaire(params, cats) {
+  document.getElementById('inp-clocher').value = params.clocher || '';
+  document.getElementById('sel-periodicite').value = params.periodicite || 'Mois';
+  const liste = document.getElementById('cat-list');
+  liste.innerHTML = '';
+  cats.forEach(cat => ajouterLigneCat(cat.libelle, cat.type));
+}
+
+function ajouterLigneCat(libelle, type) {
+  const liste = document.getElementById('cat-list');
+  const row = document.createElement('div');
+  row.className = 'cat-row';
+  row.innerHTML =
+    '<input type="text" placeholder="Libellé" value="' + esc(libelle || '') + '">' +
+    '<select>' +
+      '<option value="Recette"' + (type === 'Recette' ? ' selected' : '') + '>Recette</option>' +
+      '<option value="Dépense"' + (type === 'Dépense' ? ' selected' : '') + '>Dépense</option>' +
+    '</select>' +
+    '<button class="btn-suppr" title="Supprimer" onclick="this.parentElement.remove()">✕</button>';
+  liste.appendChild(row);
+}
+
+function ajouterCategorie() {
+  ajouterLigneCat('', 'Recette');
+}
+
+function slugifier(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function generer() {
+  const clocher = document.getElementById('inp-clocher').value.trim();
+  const periodicite = document.getElementById('sel-periodicite').value;
+  if (!clocher) { afficherAlerte('Le nom du clocher est obligatoire.', 'erreur'); return; }
+
+  const rows = document.querySelectorAll('#cat-list .cat-row');
+  const cats = [];
+  let ok = true;
+  rows.forEach(row => {
+    const lib = row.querySelector('input').value.trim();
+    const type = row.querySelector('select').value;
+    if (!lib) { ok = false; return; }
+    cats.push({ id: slugifier(lib), libelle: lib, type });
+  });
+  if (!ok) { afficherAlerte('Tous les libellés de catégorie doivent être remplis.', 'erreur'); return; }
+  if (cats.length === 0) { afficherAlerte('Au moins une catégorie est requise.', 'erreur'); return; }
+
+  const blocParams =
+    'window.PARAMS = {\n' +
+    '  clocher:     "' + clocher + '",\n' +
+    '  periodicite: "' + periodicite + '"\n' +
+    '};';
+
+  const blocCats =
+    'window.CATEGORIES = [\n' +
+    cats.map(c =>
+      '  { id: "' + c.id + '",          libelle: "' + c.libelle + '", type: "' + c.type + '" }'
+    ).join(',\n') +
+    '\n];';
+
+  let nouveau = contenuOriginal
+    .replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams)
+    .replace(/window\.CATEGORIES\s*=\s*\[[\s\S]*?\];/, blocCats);
+
+  const blob = new Blob([nouveau], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'CLE.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  afficherAlerte('CLE.html généré avec succès.', 'info');
+}
+
+function recommencer() {
+  contenuOriginal = '';
+  document.getElementById('inp-fichier').value = '';
+  document.getElementById('cat-list').innerHTML = '';
+  document.getElementById('zone-formulaire').style.display = 'none';
+  document.getElementById('zone-chargement').style.display = 'block';
+}
+</script>
+</body>
+</html>
