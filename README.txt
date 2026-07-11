@@ -18,11 +18,7 @@ CLEConfig s'inscrit dans la chaîne de gestion financière des clochers :
 2. La trésorière dispose de CLEConfig sur son pc personnel.
 3. Grâce à CLEConfig, elle génère un fichier CLE dédicacé pour un clocher local.
 4. La trésorière remet au responsable local de clocher le fichier CLE généré, par mail ou par clef USB.
-5. Le responsable local copie son fichier CLE à l'endroit de son choix. Il y encode les recettes et dépenses du clocher.
-6. Il imprime le tableau et le transmet, par mail ou en copie imprimée, au secrétaire interparoissial et à la trésorière.
-7. Le responsable local verse également le montant indiqué sur le compte bancaire interparoissial.
-8. Le secrétaire interparoissial utilisera les informations pour les besoins de sa tâche.
-9. La trésorière encodera dans CLUP les récapitulatifs lorsqu'elle traitera l'extrait de banque y relatif.
+5. Le responsable local copie son fichier CLE à l'endroit de son choix. Il y encodera les recettes et dépenses du clocher, grâce à l'application CLE.
 
 COMPATIBILITÉ
 -------------
