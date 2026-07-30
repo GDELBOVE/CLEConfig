@@ -7,120 +7,113 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bleu: #1a56a0;
-  --bleu-clair: #e8f0fb;
-  --vert: #1e7e34;
-  --rouge: #c0392b;
-  --gris-bord: #d0d4dc;
-  --texte: #222;
-  --texte-doux: #555;
-  --radius: 6px;
-  --ombre: 0 2px 8px rgba(0,0,0,0.10);
+  --bleu: #1a56a0; --bleu-clair: #e8f0fb; --vert: #1e7e34; --rouge: #c0392b;
+  --gris-bord: #d0d4dc; --texte: #222; --texte-doux: #555;
+  --radius: 6px; --ombre: 0 2px 8px rgba(0,0,0,0.10);
 }
 body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px; color: var(--texte); background: #e9ecf3; min-height: 100vh; }
-header { background: var(--bleu); color: #fff; padding: 10px 20px; box-shadow: var(--ombre); }
-header h1 { font-size: 1.1rem; font-weight: 700; }
-main { max-width: 700px; margin: 24px auto; padding: 0 14px; }
+header { background: var(--bleu); color: #fff; padding: 10px 20px; box-shadow: var(--ombre); display: flex; align-items: center; gap: 16px; }
+header h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
+main { max-width: 760px; margin: 24px auto; padding: 0 14px; }
 .card { background: #fff; border-radius: var(--radius); box-shadow: var(--ombre); padding: 24px; margin-bottom: 16px; }
 .card h2 { font-size: 0.95rem; font-weight: 700; color: var(--bleu); margin-bottom: 16px; padding-bottom: 7px; border-bottom: 2px solid var(--bleu-clair); }
 .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
 .form-group label { font-size: 0.78rem; font-weight: 700; color: var(--texte-doux); text-transform: uppercase; letter-spacing: .04em; }
 .form-group input, .form-group select { border: 1px solid var(--gris-bord); border-radius: var(--radius); padding: 8px 10px; font-size: 0.93rem; outline: none; }
 .form-group input:focus, .form-group select:focus { border-color: var(--bleu); }
-.btn { padding: 9px 22px; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 700; cursor: pointer; }
-.btn-bleu { background: var(--bleu); color: #fff; }
-.btn-vert { background: var(--vert); color: #fff; }
+.btn { padding: 7px 18px; border: none; border-radius: var(--radius); font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.btn-bleu  { background: var(--bleu);  color: #fff; }
+.btn-vert  { background: var(--vert);  color: #fff; }
 .btn-rouge { background: var(--rouge); color: #fff; }
-.btn-gris { background: var(--gris-bord); color: var(--texte); }
+.btn-gris  { background: var(--gris-bord); color: var(--texte); }
 .btn:hover { opacity: 0.88; }
-
-.actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
-
-/* Chargement */
-#zone-chargement { text-align: center; padding: 32px; }
-#zone-chargement p { color: var(--texte-doux); margin-bottom: 16px; }
-input[type=file] { display: none; }
-#label-fichier { display: inline-block; padding: 10px 24px; background: var(--bleu); color: #fff; border-radius: var(--radius); cursor: pointer; font-weight: 700; font-size: 0.95rem; }
-#label-fichier:hover { opacity: 0.88; }
-
-#zone-formulaire { display: none; }
-
+.btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+table { width: 100%; border-collapse: collapse; }
+thead th { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--texte-doux); padding: 8px 10px; border-bottom: 2px solid var(--bleu-clair); text-align: left; }
+tbody tr { border-bottom: 1px solid #f0f0f0; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f7f9ff; }
+tbody td { padding: 9px 10px; vertical-align: middle; }
+td.td-actions { text-align: right; white-space: nowrap; display: flex; gap: 6px; justify-content: flex-end; }
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; align-items: center; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal { background: #fff; border-radius: var(--radius); box-shadow: 0 8px 30px rgba(0,0,0,0.2); padding: 28px; width: 380px; max-width: 95vw; }
+.modal h3 { font-size: 1rem; font-weight: 700; color: var(--bleu); margin-bottom: 18px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
 #alerte { display: none; padding: 10px 16px; border-radius: var(--radius); font-weight: 600; font-size: 0.88rem; margin-bottom: 14px; }
 #alerte.info   { background: #e8f5e9; border: 1px solid #a5d6a7; color: #1b5e20; }
 #alerte.erreur { background: #fde8e6; border: 1px solid #f5c6c2; color: var(--rouge); }
 </style>
 </head>
 <body>
-<header>
-  <h1>CLEConfig — Configurateur CLE</h1>
-</header>
+<header><h1>CLEConfig — Configurateur CLE</h1></header>
 <main>
   <div id="alerte"></div>
 
-  <!-- Étape 1 : charger CLE.html -->
-  <div class="card" id="zone-chargement">
-    <h2>Charger CLE.html</h2>
-    <p>Sélectionnez votre fichier CLE.html pour modifier sa configuration.</p>
-    <label id="label-fichier" for="inp-fichier">📂 Choisir CLE.html</label>
-    <input type="file" id="inp-fichier" accept=".html" onchange="chargerFichier(this)">
+  <div class="card" id="zone-setup" style="text-align:center;padding:40px 24px;">
+    <p style="color:var(--texte-doux);margin-bottom:24px;">Sélectionnez le répertoire de l'application.</p>
+    <button class="btn btn-bleu" onclick="choisirRepertoire()">📁 Ouvrir le répertoire</button>
   </div>
 
-  <!-- Étape 2 : formulaire -->
-  <div id="zone-formulaire">
-    <div class="card">
-      <h2>Paramètres</h2>
-      <div class="form-group">
-        <label for="sel-clocher">Nom du clocher</label>
-        <select id="sel-clocher">
-          <option value="">— Choisir —</option>
-          <option>Barbençon</option>
-          <option>Beaumont</option>
-          <option>Boussu</option>
-          <option>Erpion</option>
-          <option>Fourbechies</option>
-          <option>Froidchapelle</option>
-          <option>Grandrieu</option>
-          <option>Leugnies</option>
-          <option>Montbliart</option>
-          <option>Rance</option>
-          <option>Renlies</option>
-          <option>Sautin</option>
-          <option>Sivry</option>
-          <option>Solre-Saint-Géry</option>
-          <option>Strée</option>
-          <option>Thirimont</option>
-          <option>Vergnies</option>
-        </select>
+  <div id="zone-principale" style="display:none">
+    <div class="card" style="padding:16px 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <h2 style="margin:0;border:none;padding:0;">Clochers</h2>
+        <div style="display:flex;gap:8px;">
+          <button id="btn-generer-tous" class="btn btn-vert btn-sm" style="display:none" onclick="genererTous()">⬇ Générer tous</button>
+          <button class="btn btn-bleu btn-sm" onclick="ouvrirModalAjout()">+ Ajouter</button>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="sel-periodicite">Périodicité</label>
-        <select id="sel-periodicite">
-          <option value="Mois">Mois</option>
-          <option value="Trimestre">Trimestre</option>
-          <option value="Semestre">Semestre</option>
-          <option value="Année">Année</option>
-        </select>
-      </div>
-    </div>
-
-
-    <div class="card">
-      <h2>Générer</h2>
-      <div class="actions">
-        <button class="btn btn-vert" onclick="generer()">⬇ Générer CLE.html</button>
-      </div>
+      <table>
+        <thead><tr><th>Clocher</th><th>Périodicité</th><th></th></tr></thead>
+        <tbody id="tbody-clochers"></tbody>
+      </table>
     </div>
   </div>
 </main>
 
+<div class="modal-bg" id="modal-clocher">
+  <div class="modal">
+    <h3 id="modal-titre">Ajouter un clocher</h3>
+    <div class="form-group">
+      <label for="modal-nom">Nom du clocher</label>
+      <input type="text" id="modal-nom" placeholder="Ex : Beaumont">
+    </div>
+    <div class="form-group">
+      <label for="modal-periodicite">Périodicité</label>
+      <select id="modal-periodicite">
+        <option value="Mois">Mois</option>
+        <option value="Trimestre">Trimestre</option>
+        <option value="Semestre" selected>Semestre</option>
+        <option value="Année">Année</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gris" onclick="fermerModal()">Annuler</button>
+      <button class="btn btn-bleu" onclick="sauverModal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
-let contenuOriginal = '';
+const CLOCHERS_DEFAUT  = [
+  'Barbençon','Beaumont','Boussu','Erpion','Fourbechies','Froidchapelle',
+  'Grandrieu','Leugnies','Montbliart','Rance','Renlies','Sautin','Sivry',
+  'Solre-Saint-Géry','Strée','Thirimont','Vergnies'
+];
+const PERIODICITE_DEFAUT = 'Semestre';
+const DATA_FILENAME      = 'cleconfig-data.json';
+const TEMPLATE_FILENAME  = 'CLE.html';
+const DB_NAME = 'cleconfig-v3', DB_STORE = 'handles';
 
-// ── Mémorisation du dernier répertoire via IndexedDB ──
-const DB_NAME = 'cleconfig', DB_STORE = 'handles', DIR_KEY = 'lastDir';
+let dirHandle       = null;
+let templateContenu = '';
+let clochers        = [];
+let modalEditIdx    = -1;
 
+// ── IndexedDB ─────────────────────────────────────────────────────────────────
 function ouvrirIDB() {
   return new Promise((res, rej) => {
     const req = indexedDB.open(DB_NAME, 1);
@@ -129,126 +122,228 @@ function ouvrirIDB() {
     req.onerror   = e => rej(e.target.error);
   });
 }
-async function sauverDirHandle(handle) {
-  try {
-    const db  = await ouvrirIDB();
-    const tx  = db.transaction(DB_STORE, 'readwrite');
-    tx.objectStore(DB_STORE).put(handle, DIR_KEY);
-    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
-    db.close();
-  } catch(e) { /* silencieux */ }
+async function idbPut(key, val) {
+  const db = await ouvrirIDB();
+  const tx = db.transaction(DB_STORE, 'readwrite');
+  tx.objectStore(DB_STORE).put(val, key);
+  await new Promise((r, j) => { tx.oncomplete = r; tx.onerror = j; });
+  db.close();
 }
-async function lireDirHandle() {
-  try {
-    const db  = await ouvrirIDB();
-    const tx  = db.transaction(DB_STORE, 'readonly');
-    const req = tx.objectStore(DB_STORE).get(DIR_KEY);
-    const handle = await new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = rej; });
-    db.close();
-    return handle || null;
-  } catch(e) { return null; }
+async function idbGet(key) {
+  const db  = await ouvrirIDB();
+  const tx  = db.transaction(DB_STORE, 'readonly');
+  const req = tx.objectStore(DB_STORE).get(key);
+  const val = await new Promise((r, j) => { req.onsuccess = () => r(req.result); req.onerror = j; });
+  db.close();
+  return val ?? null;
 }
 
-function afficherSuccess() {
-  document.querySelector('main').innerHTML = `
-    <div class="card" style="text-align:center;padding:48px 24px;">
-      <div style="font-size:3rem;margin-bottom:16px;">✅</div>
-      <h2 style="font-size:1.2rem;margin-bottom:8px;color:var(--vert);">CLE.html enregistré avec succès</h2>
-      <p style="color:var(--texte-doux);">Vous pouvez fermer cette fenêtre.</p>
-    </div>`;
-}
-
+// ── Alerte ────────────────────────────────────────────────────────────────────
 function afficherAlerte(msg, type) {
   const el = document.getElementById('alerte');
-  el.textContent = msg;
-  el.className = type;
-  el.style.display = 'block';
+  el.textContent = msg; el.className = type; el.style.display = 'block';
   setTimeout(() => el.style.display = 'none', 4000);
 }
 
-function chargerFichier(input) {
-  const fichier = input.files[0];
-  if (!fichier) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    contenuOriginal = e.target.result;
-    try {
-      const params = extraireParams(contenuOriginal);
-      remplirFormulaire(params);
-      document.getElementById('zone-chargement').style.display = 'none';
-      document.getElementById('zone-formulaire').style.display = 'block';
-    } catch(err) {
-      afficherAlerte('Impossible de lire les paramètres : ' + err.message, 'erreur');
+function bloquer(msg) {
+  document.querySelector('main').innerHTML =
+    `<div class="card" style="text-align:center;padding:48px 24px;">
+      <div style="font-size:3rem;margin-bottom:16px;">⛔</div>
+      <h2 style="font-size:1.1rem;color:var(--rouge);margin-bottom:8px;">Impossible de démarrer</h2>
+      <p style="color:var(--texte-doux);">${msg}</p>
+    </div>`;
+}
+
+// ── Chargement depuis le répertoire ───────────────────────────────────────────
+async function chargerDepuisDir(dh) {
+  // 1. Lire le modèle CLE.html
+  let templateFH;
+  try { templateFH = await dh.getFileHandle(TEMPLATE_FILENAME); }
+  catch(e) { bloquer(`${TEMPLATE_FILENAME} introuvable dans le répertoire sélectionné.`); return false; }
+  const templateFile = await templateFH.getFile();
+  templateContenu = await templateFile.text();
+  if (!templateContenu.includes('window.PARAMS')) {
+    bloquer(`${TEMPLATE_FILENAME} ne contient pas de bloc PARAMS valide.`); return false;
+  }
+
+  // 2. Lire ou créer cleconfig-data.json
+  let dataFH;
+  try {
+    dataFH = await dh.getFileHandle(DATA_FILENAME, { create: true });
+  } catch(e) { bloquer(`Impossible d'accéder à ${DATA_FILENAME} : ` + e.message); return false; }
+
+  try {
+    const f   = await dataFH.getFile();
+    const txt = await f.text();
+    const parsed = txt.trim() ? JSON.parse(txt) : null;
+    if (Array.isArray(parsed) && parsed.length) {
+      clochers = parsed;
+    } else {
+      throw new Error('vide');
     }
-  };
-  reader.readAsText(fichier, 'utf-8');
+  } catch(e) {
+    clochers = CLOCHERS_DEFAUT.map(nom => ({ nom, periodicite: PERIODICITE_DEFAUT }));
+    await sauverDataFichier(dataFH);
+  }
+
+  // Stocker le file handle du data dans l'état global (pour save ultérieur)
+  dirHandle = dh;
+  window._dataFH = dataFH;
+  return true;
 }
 
-function extraireParams(contenu) {
-  const m = contenu.match(/window\.PARAMS\s*=\s*\{([^}]+)\}/);
-  if (!m) throw new Error('Bloc PARAMS introuvable.');
-  const bloc = m[1];
-  const params = {};
-  bloc.replace(/(\w+)\s*:\s*"([^"]*)"/g, (_, k, v) => { params[k] = v; });
-  return params;
+// ── Sauvegarde données ────────────────────────────────────────────────────────
+async function sauverDataFichier(fh) {
+  const handle = fh || window._dataFH;
+  if (!handle) return;
+  try {
+    const writable = await handle.createWritable();
+    await writable.write(JSON.stringify(clochers, null, 2));
+    await writable.close();
+  } catch(e) { afficherAlerte('Erreur sauvegarde : ' + e.message, 'erreur'); }
 }
 
-function remplirFormulaire(params) {
-  document.getElementById('sel-clocher').value = params.clocher || '';
-  document.getElementById('sel-periodicite').value = params.periodicite || 'Mois';
-}
-
+// ── Rendu tableau ─────────────────────────────────────────────────────────────
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-async function generer() {
-  try { await genererInterne(); } catch(e) { afficherAlerte('Erreur : ' + e.message, 'erreur'); }
+function renderClochers() {
+  const tbody = document.getElementById('tbody-clochers');
+  if (!clochers.length) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--texte-doux);padding:24px;">Aucun clocher — cliquez sur + Ajouter</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = clochers.map((c, i) => `<tr>
+    <td><strong>${esc(c.nom)}</strong></td>
+    <td>${esc(c.periodicite)}</td>
+    <td class="td-actions">
+      <button class="btn btn-vert btn-sm" onclick="generer(${i})">⬇ Générer</button>
+      <button class="btn btn-gris btn-sm" onclick="ouvrirModalEdit(${i})"><span style="display:inline-block;transform:rotate(-45deg);">✏</span></button>
+      <button class="btn btn-rouge btn-sm" onclick="supprimer(${i})">🗑</button>
+    </td>
+  </tr>`).join('');
 }
 
-async function genererInterne() {
-  const clocher = document.getElementById('sel-clocher').value;
-  const periodicite = document.getElementById('sel-periodicite').value;
-  if (!clocher) { afficherAlerte('Le nom du clocher est obligatoire.', 'erreur'); return; }
+function afficherPrincipale() {
+  document.getElementById('zone-setup').style.display = 'none';
+  document.getElementById('zone-principale').style.display = 'block';
+  document.getElementById('btn-generer-tous').style.display = 'inline-block';
+  renderClochers();
+}
+
+// ── Générer CLE.html pour un clocher ─────────────────────────────────────────
+async function generer(idx) {
+  const c = clochers[idx];
+  if (!c || !templateContenu) return;
 
   const blocParams =
     'window.PARAMS = {\n' +
-    '  clocher:     "' + clocher + '",\n' +
-    '  periodicite: "' + periodicite + '"\n' +
+    '  clocher:     "' + c.nom + '",\n' +
+    '  periodicite: "' + c.periodicite + '"\n' +
     '};';
+  const nouveau = templateContenu.replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams);
 
-  let nouveau = contenuOriginal
-    .replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams);
-
-  const blob = new Blob([nouveau], { type: 'text/html;charset=utf-8' });
-
-  if (window.showSaveFilePicker) {
-    try {
-      const lastDir = await lireDirHandle();
-      const opts = {
-        suggestedName: 'CLE.html',
-        types: [{ description: 'Fichier HTML', accept: { 'text/html': ['.html'] } }]
-      };
-      if (lastDir) opts.startIn = lastDir;
-      const fileHandle = await window.showSaveFilePicker(opts);
-      const writable = await fileHandle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      await sauverDirHandle(fileHandle);
-      afficherSuccess();
-    } catch(e) {
-      if (e.name !== 'AbortError') afficherAlerte('Erreur lors de l\'enregistrement : ' + e.message, 'erreur');
-    }
-  } else {
-    const url = URL.createObjectURL(blob);
-    const a   = document.createElement('a');
-    a.href = url; a.download = 'CLE.html';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    afficherAlerte('CLE.html généré avec succès.', 'info');
+  try {
+    const clochersDir = await dirHandle.getDirectoryHandle('Clochers', { create: true });
+    const clocherDir  = await clochersDir.getDirectoryHandle(c.nom, { create: true });
+    const fileHandle  = await clocherDir.getFileHandle('CLE.html', { create: true });
+    const writable    = await fileHandle.createWritable();
+    await writable.write(nouveau);
+    await writable.close();
+    afficherAlerte(`CLE.html généré pour ${c.nom}.`, 'info');
+  } catch(e) {
+    throw new Error(`${c.nom} : ${e.message}`);
   }
 }
+
+// ── Générer tous ─────────────────────────────────────────────────────────────
+async function genererTous() {
+  if (!clochers.length) return;
+  const btn = document.getElementById('btn-generer-tous');
+  btn.disabled = true;
+  btn.textContent = '⏳ Génération…';
+  let ok = 0, err = 0;
+  for (let i = 0; i < clochers.length; i++) {
+    try { await generer(i); ok++; }
+    catch(e) { err++; }
+  }
+  btn.disabled = false;
+  btn.textContent = '⬇ Générer tous';
+  afficherAlerte(`${ok} fichier(s) généré(s)${err ? `, ${err} erreur(s)` : ''}.`, err ? 'erreur' : 'info');
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function ouvrirModalAjout() {
+  modalEditIdx = -1;
+  document.getElementById('modal-titre').textContent = 'Ajouter un clocher';
+  document.getElementById('modal-nom').value = '';
+  document.getElementById('modal-periodicite').value = PERIODICITE_DEFAUT;
+  document.getElementById('modal-clocher').classList.add('open');
+  document.getElementById('modal-nom').focus();
+}
+function ouvrirModalEdit(idx) {
+  modalEditIdx = idx;
+  const c = clochers[idx];
+  document.getElementById('modal-titre').textContent = 'Modifier — ' + c.nom;
+  document.getElementById('modal-nom').value = c.nom;
+  document.getElementById('modal-periodicite').value = c.periodicite;
+  document.getElementById('modal-clocher').classList.add('open');
+}
+function fermerModal() { document.getElementById('modal-clocher').classList.remove('open'); }
+
+async function sauverModal() {
+  const nom = document.getElementById('modal-nom').value.trim();
+  const periodicite = document.getElementById('modal-periodicite').value;
+  if (!nom) { afficherAlerte('Le nom est obligatoire.', 'erreur'); return; }
+  if (modalEditIdx === -1) {
+    clochers.push({ nom, periodicite });
+  } else {
+    clochers[modalEditIdx] = { nom, periodicite };
+  }
+  await sauverDataFichier();
+  fermerModal();
+  renderClochers();
+}
+
+async function supprimer(idx) {
+  const c = clochers[idx];
+  if (!confirm(`Supprimer "${c.nom}" ?`)) return;
+  clochers.splice(idx, 1);
+  await sauverDataFichier();
+  renderClochers();
+}
+
+// ── Setup : choisir le répertoire ─────────────────────────────────────────────
+async function choisirRepertoire() {
+  try {
+    const dh = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await idbPut('dirHandle', dh);
+    const ok = await chargerDepuisDir(dh);
+    if (ok) afficherPrincipale();
+  } catch(e) {
+    if (e.name !== 'AbortError') afficherAlerte('Erreur : ' + e.message, 'erreur');
+  }
+}
+
+// ── Démarrage ─────────────────────────────────────────────────────────────────
+async function demarrer() {
+  const dh = await idbGet('dirHandle');
+  if (!dh) return; // premier démarrage : afficher le bouton
+
+  let perm = await dh.queryPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') perm = await dh.requestPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') { bloquer('Accès refusé au répertoire.'); return; }
+
+  const ok = await chargerDepuisDir(dh);
+  if (ok) afficherPrincipale();
+}
+
+document.getElementById('modal-clocher').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-clocher')) fermerModal();
+});
+
+demarrer();
 </script>
 </body>
 </html>
