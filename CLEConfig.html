@@ -118,6 +118,46 @@ input[type=file] { display: none; }
 
 let contenuOriginal = '';
 
+// ── Mémorisation du dernier répertoire via IndexedDB ──
+const DB_NAME = 'cleconfig', DB_STORE = 'handles', DIR_KEY = 'lastDir';
+
+function ouvrirIDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE);
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+async function sauverDirHandle(handle) {
+  try {
+    const db  = await ouvrirIDB();
+    const tx  = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(handle, DIR_KEY);
+    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+    db.close();
+  } catch(e) { /* silencieux */ }
+}
+async function lireDirHandle() {
+  try {
+    const db  = await ouvrirIDB();
+    const tx  = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).get(DIR_KEY);
+    const handle = await new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = rej; });
+    db.close();
+    return handle || null;
+  } catch(e) { return null; }
+}
+
+function afficherSuccess() {
+  document.querySelector('main').innerHTML = `
+    <div class="card" style="text-align:center;padding:48px 24px;">
+      <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+      <h2 style="font-size:1.2rem;margin-bottom:8px;color:var(--vert);">CLE.html enregistré avec succès</h2>
+      <p style="color:var(--texte-doux);">Vous pouvez fermer cette fenêtre.</p>
+    </div>`;
+}
+
 function afficherAlerte(msg, type) {
   const el = document.getElementById('alerte');
   el.textContent = msg;
@@ -162,11 +202,11 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function generer() {
-  try { genererInterne(); } catch(e) { afficherAlerte('Erreur : ' + e.message, 'erreur'); }
+async function generer() {
+  try { await genererInterne(); } catch(e) { afficherAlerte('Erreur : ' + e.message, 'erreur'); }
 }
 
-function genererInterne() {
+async function genererInterne() {
   const clocher = document.getElementById('sel-clocher').value;
   const periodicite = document.getElementById('sel-periodicite').value;
   if (!clocher) { afficherAlerte('Le nom du clocher est obligatoire.', 'erreur'); return; }
@@ -181,15 +221,33 @@ function genererInterne() {
     .replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams);
 
   const blob = new Blob([nouveau], { type: 'text/html;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url;
-  a.download = 'CLE.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  afficherAlerte('CLE.html généré avec succès.', 'info');
+
+  if (window.showSaveFilePicker) {
+    try {
+      const lastDir = await lireDirHandle();
+      const opts = {
+        suggestedName: 'CLE.html',
+        types: [{ description: 'Fichier HTML', accept: { 'text/html': ['.html'] } }]
+      };
+      if (lastDir) opts.startIn = lastDir;
+      const fileHandle = await window.showSaveFilePicker(opts);
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      await sauverDirHandle(fileHandle);
+      afficherSuccess();
+    } catch(e) {
+      if (e.name !== 'AbortError') afficherAlerte('Erreur lors de l\'enregistrement : ' + e.message, 'erreur');
+    }
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href = url; a.download = 'CLE.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    afficherAlerte('CLE.html généré avec succès.', 'info');
+  }
 }
 </script>
 </body>
