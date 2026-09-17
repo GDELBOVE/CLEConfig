@@ -44,6 +44,7 @@ td.td-actions { text-align: right; white-space: nowrap; display: flex; gap: 6px;
 #alerte.info   { background: #e8f5e9; border: 1px solid #a5d6a7; color: #1b5e20; }
 #alerte.erreur { background: #fde8e6; border: 1px solid #f5c6c2; color: var(--rouge); }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator@4.1.1/dist/index.browser.js"></script>
 </head>
 <body>
 <header><h1>CLEConfig — Configurateur CLE</h1></header>
@@ -242,7 +243,24 @@ async function generer(idx) {
     '  clocher:     "' + c.nom + '",\n' +
     '  periodicite: "' + c.periodicite + '"\n' +
     '};';
-  const nouveau = templateContenu.replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams);
+  let nouveau = templateContenu.replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams);
+
+  // Obfuscation systématique
+  if (typeof JavaScriptObfuscator !== 'undefined') {
+    const match = nouveau.match(/<script>([\s\S]*?)<\/script>/);
+    if (match) {
+      const jsOriginal = match[1];
+      const jsObf = JavaScriptObfuscator.obfuscate(jsOriginal, {
+        compact: true,
+        controlFlowFlattening: false,
+        deadCodeInjection: false,
+        stringArray: true,
+        stringArrayEncoding: ['base64'],
+        stringArrayThreshold: 0.75,
+      }).getObfuscatedCode();
+      nouveau = nouveau.replace(/<script>[\s\S]*?<\/script>/, '<script>' + jsObf + '<\/script>');
+    }
+  }
 
   try {
     const clochersDir = await dirHandle.getDirectoryHandle('Clochers', { create: true });
