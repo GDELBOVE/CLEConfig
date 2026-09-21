@@ -260,7 +260,7 @@ function afficherPrincipale() {
 }
 
 // ── Générer CLE.html pour un clocher ─────────────────────────────────────────
-async function generer(idx) {
+async function generer(idx, silencieux = false) {
   const c = clochers[idx];
   if (!c || !templateContenu) return;
 
@@ -298,7 +298,7 @@ async function generer(idx) {
     const writable    = await fileHandle.createWritable();
     await writable.write(nouveau);
     await writable.close();
-    afficherAlerte(`CLE.html généré pour ${c.nom}.`, 'info');
+    if (!silencieux) afficherAlerte(`2. ${c.nom}.html généré.`, 'info');
   } catch(e) {
     throw new Error(`${c.nom} : ${e.message}`);
   }
@@ -318,7 +318,7 @@ async function _executerGenererTous() {
   btn.textContent = '⏳ Génération…';
   let ok = 0; const erreurs = [];
   for (let i = 0; i < clochers.length; i++) {
-    try { await generer(i); ok++; }
+    try { await generer(i, true); ok++; }
     catch(e) { erreurs.push(clochers[i].nom); }
   }
   btn.disabled = false;
