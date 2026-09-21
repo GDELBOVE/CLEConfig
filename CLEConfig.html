@@ -115,6 +115,7 @@ const CLOCHERS_DEFAUT  = [
 const PERIODICITE_DEFAUT = 'Semestre';
 const DATA_FILENAME      = 'cleconfig-data.json';
 const TEMPLATE_FILENAME  = 'CLE.html';
+const OUTPUT_PREFIX      = '2. ';
 const DB_NAME = 'cleconfig-v3', DB_STORE = 'handles';
 
 let dirHandle       = null;
@@ -295,11 +296,11 @@ async function generer(idx, silencieux = false) {
     for await (const [name] of clocherDir.entries()) {
       if (name.endsWith('.html')) await clocherDir.removeEntry(name);
     }
-    const fileHandle  = await clocherDir.getFileHandle('2. ' + c.nom + '.html', { create: true });
+    const fileHandle  = await clocherDir.getFileHandle(OUTPUT_PREFIX + c.nom + '.html', { create: true });
     const writable    = await fileHandle.createWritable();
     await writable.write(nouveau);
     await writable.close();
-    if (!silencieux) afficherAlerte(`2. ${c.nom}.html généré.`, 'info');
+    if (!silencieux) afficherAlerte(`${OUTPUT_PREFIX}${c.nom}.html généré.`, 'info');
   } catch(e) {
     throw new Error(`${c.nom} : ${e.message}`);
   }
