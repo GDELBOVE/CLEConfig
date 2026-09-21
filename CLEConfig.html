@@ -96,6 +96,14 @@ td.td-actions { text-align: right; white-space: nowrap; display: flex; gap: 6px;
   </div>
 </div>
 
+<!-- Dialogue confirmation -->
+<div class="modal-bg" id="dlg-confirm">
+  <div class="modal" style="min-width:280px;max-width:400px">
+    <p id="dlg-confirm-msg" style="margin-bottom:20px;font-size:0.95rem;line-height:1.5"></p>
+    <div id="dlg-confirm-btns" class="modal-actions"></div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -140,6 +148,24 @@ async function idbGet(key) {
 }
 
 // ── Alerte ────────────────────────────────────────────────────────────────────
+function confirmerAction(msg, boutons) {
+  const dlg  = document.getElementById('dlg-confirm');
+  document.getElementById('dlg-confirm-msg').textContent = msg;
+  const cont = document.getElementById('dlg-confirm-btns');
+  cont.innerHTML = '';
+  boutons.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + (b.style || 'btn-gris');
+    btn.textContent = b.label;
+    btn.onclick = () => { fermerConfirm(); if (b.action) b.action(); };
+    cont.appendChild(btn);
+  });
+  dlg.classList.add('open');
+  dlg.onkeydown = e => { if (e.key === 'Escape') fermerConfirm(); };
+  cont.querySelector('button').focus();
+}
+function fermerConfirm() { document.getElementById('dlg-confirm').classList.remove('open'); }
+
 function afficherAlerte(msg, type) {
   const el = document.getElementById('alerte');
   el.textContent = msg; el.className = type; el.style.display = 'block';
@@ -284,14 +310,17 @@ async function genererTous() {
   const btn = document.getElementById('btn-generer-tous');
   btn.disabled = true;
   btn.textContent = '⏳ Génération…';
-  let ok = 0, err = 0;
+  let ok = 0; const erreurs = [];
   for (let i = 0; i < clochers.length; i++) {
     try { await generer(i); ok++; }
-    catch(e) { err++; }
+    catch(e) { erreurs.push(clochers[i].nom); }
   }
   btn.disabled = false;
   btn.textContent = '⬇ Générer tous';
-  afficherAlerte(`${ok} fichier(s) généré(s)${err ? `, ${err} erreur(s)` : ''}.`, err ? 'erreur' : 'info');
+  if (erreurs.length)
+    afficherAlerte(`${ok} généré(s). Erreurs : ${erreurs.join(', ')}.`, 'erreur');
+  else
+    afficherAlerte(`${ok} fichier(s) généré(s).`, 'info');
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
@@ -310,6 +339,7 @@ function ouvrirModalEdit(idx) {
   document.getElementById('modal-nom').value = c.nom;
   document.getElementById('modal-periodicite').value = c.periodicite;
   document.getElementById('modal-clocher').classList.add('open');
+  document.getElementById('modal-nom').focus();
 }
 function fermerModal() { document.getElementById('modal-clocher').classList.remove('open'); }
 
@@ -329,10 +359,14 @@ async function sauverModal() {
 
 async function supprimer(idx) {
   const c = clochers[idx];
-  if (!confirm(`Supprimer "${c.nom}" ?`)) return;
-  clochers.splice(idx, 1);
-  await sauverDataFichier();
-  renderClochers();
+  confirmerAction(`Supprimer "${c.nom}" ?`, [
+    { label: 'Annuler', style: 'btn-gris' },
+    { label: 'Supprimer', style: 'btn-rouge', action: async () => {
+      clochers.splice(idx, 1);
+      await sauverDataFichier();
+      renderClochers();
+    }}
+  ]);
 }
 
 // ── Setup : choisir le répertoire ─────────────────────────────────────────────
@@ -362,6 +396,13 @@ async function demarrer() {
 
 document.getElementById('modal-clocher').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-clocher')) fermerModal();
+});
+document.getElementById('modal-clocher').addEventListener('keydown', e => {
+  if (e.key === 'Escape') fermerModal();
+  if (e.key === 'Enter') { e.preventDefault(); sauverModal(); }
+});
+document.getElementById('dlg-confirm').addEventListener('click', e => {
+  if (e.target === document.getElementById('dlg-confirm')) fermerConfirm();
 });
 
 demarrer();
