@@ -307,6 +307,12 @@ async function generer(idx) {
 // ── Générer tous ─────────────────────────────────────────────────────────────
 async function genererTous() {
   if (!clochers.length) return;
+  confirmerAction(`Générer et écraser les fichiers des ${clochers.length} clocher(s) ?`, [
+    { label: 'Annuler', style: 'btn-gris' },
+    { label: 'Générer tous', style: 'btn-vert', action: _executerGenererTous }
+  ]);
+}
+async function _executerGenererTous() {
   const btn = document.getElementById('btn-generer-tous');
   btn.disabled = true;
   btn.textContent = '⏳ Génération…';
@@ -339,7 +345,8 @@ function ouvrirModalEdit(idx) {
   document.getElementById('modal-nom').value = c.nom;
   document.getElementById('modal-periodicite').value = c.periodicite;
   document.getElementById('modal-clocher').classList.add('open');
-  document.getElementById('modal-nom').focus();
+  const inp = document.getElementById('modal-nom');
+  inp.focus(); inp.select();
 }
 function fermerModal() { document.getElementById('modal-clocher').classList.remove('open'); }
 
@@ -347,6 +354,8 @@ async function sauverModal() {
   const nom = document.getElementById('modal-nom').value.trim();
   const periodicite = document.getElementById('modal-periodicite').value;
   if (!nom) { afficherAlerte('Le nom est obligatoire.', 'erreur'); return; }
+  const doublon = clochers.some((c, i) => c.nom.toLowerCase() === nom.toLowerCase() && i !== modalEditIdx);
+  if (doublon) { afficherAlerte(`"${nom}" existe déjà.`, 'erreur'); return; }
   if (modalEditIdx === -1) {
     clochers.push({ nom, periodicite });
   } else {
