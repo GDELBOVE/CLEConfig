@@ -265,7 +265,7 @@ async function generer(idx) {
   try {
     const clochersDir = await dirHandle.getDirectoryHandle('Clochers', { create: true });
     const clocherDir  = await clochersDir.getDirectoryHandle(c.nom, { create: true });
-    const fileHandle  = await clocherDir.getFileHandle('CLE.html', { create: true });
+    const fileHandle  = await clocherDir.getFileHandle(c.nom + '.html', { create: true });
     const writable    = await fileHandle.createWritable();
     await writable.write(nouveau);
     await writable.close();
