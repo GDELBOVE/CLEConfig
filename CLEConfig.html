@@ -78,7 +78,7 @@ td.td-actions { text-align: right; white-space: nowrap; display: flex; gap: 6px;
     <h3 id="modal-titre">Ajouter un clocher</h3>
     <div class="form-group">
       <label for="modal-nom">Nom du clocher</label>
-      <input type="text" id="modal-nom" placeholder="Ex : Beaumont">
+      <input type="text" id="modal-nom" placeholder="Ex : Beaumont" maxlength="50">
     </div>
     <div class="form-group">
       <label for="modal-periodicite">Périodicité</label>
@@ -264,9 +264,10 @@ async function generer(idx, silencieux = false) {
   const c = clochers[idx];
   if (!c || !templateContenu) return;
 
+  const nomJS = c.nom.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   const blocParams =
     'window.PARAMS = {\n' +
-    '  clocher:     "' + c.nom + '",\n' +
+    '  clocher:     "' + nomJS + '",\n' +
     '  periodicite: "' + c.periodicite + '"\n' +
     '};';
   let nouveau = templateContenu.replace(/window\.PARAMS\s*=\s*\{[^}]+\};/, blocParams);
@@ -364,6 +365,7 @@ async function sauverModal() {
   await sauverDataFichier();
   fermerModal();
   renderClochers();
+  afficherAlerte(modalEditIdx === -1 ? `"${nom}" ajouté.` : `"${nom}" mis à jour.`, 'info');
 }
 
 async function supprimer(idx) {
